@@ -120,8 +120,9 @@ class ConstructorResolver {
 
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
-
+		//要使用的构造方法
 		Constructor<?> constructorToUse = null;
+		//构造方法参数的值
 		ArgumentsHolder argsHolderToUse = null;
 		Object[] argsToUse = null;
 
@@ -184,17 +185,20 @@ class ConstructorResolver {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
+				//存构造方法的值
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
+			//构造方法排序 访问权限优先，public最靠前，参数个数越多越靠前
 			AutowireUtils.sortConstructors(candidates);
 			int minTypeDiffWeight = Integer.MAX_VALUE;
 			Set<Constructor<?>> ambiguousConstructors = null;
 			LinkedList<UnsatisfiedDependencyException> causes = null;
 
 			for (Constructor<?> candidate : candidates) {
+				//获取构造方法的参数类型
 				Class<?>[] paramTypes = candidate.getParameterTypes();
 
 				if (constructorToUse != null && argsToUse != null && argsToUse.length > paramTypes.length) {
@@ -209,6 +213,7 @@ class ConstructorResolver {
 				ArgumentsHolder argsHolder;
 				if (resolvedValues != null) {
 					try {
+						//判断构造方法是否添加了@ConstructorProperties注解
 						String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, paramTypes.length);
 						if (paramNames == null) {
 							ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();

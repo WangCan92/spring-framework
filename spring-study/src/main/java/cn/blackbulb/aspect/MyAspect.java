@@ -38,6 +38,9 @@ public class MyAspect {
 	public void pointCutAnno() {
 	}
 
+	/**
+	 * this与target的区别
+	 */
 	@Pointcut("this(cn.blackbulb.dao.DaoTest)")
 	public void pointCutThis() {
 	}

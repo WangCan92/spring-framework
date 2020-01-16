@@ -95,6 +95,7 @@ class ConfigurationClassEnhancer {
 	 * @return the enhanced subclass
 	 */
 	public Class<?> enhance(Class<?> configClass, @Nullable ClassLoader classLoader) {
+		//通过判断是否为原始类的子类来判断目标类是否已经被代理
 		if (EnhancedConfiguration.class.isAssignableFrom(configClass)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug(String.format("Ignoring request to enhance %s as it has " +
@@ -106,6 +107,7 @@ class ConfigurationClassEnhancer {
 			}
 			return configClass;
 		}
+		//未被代理进行下面代理步骤
 		Class<?> enhancedClass = createClass(newEnhancer(configClass, classLoader));
 		if (logger.isTraceEnabled()) {
 			logger.trace(String.format("Successfully enhanced %s; enhanced class name is: %s",
@@ -137,6 +139,7 @@ class ConfigurationClassEnhancer {
 		Class<?> subclass = enhancer.createClass();
 		// Registering callbacks statically (as opposed to thread-local)
 		// is critical for usage in an OSGi environment (SPR-5932)...
+		//设置代理内容
 		Enhancer.registerStaticCallbacks(subclass, CALLBACKS);
 		return subclass;
 	}
@@ -334,8 +337,10 @@ class ConfigurationClassEnhancer {
 			// proxy that intercepts calls to getObject() and returns any cached bean instance.
 			// This ensures that the semantics of calling a FactoryBean from within @Bean methods
 			// is the same as that of referring to a FactoryBean within XML. See SPR-6602.
+			//判断是factorybean是否已经创建
 			if (factoryContainsBean(beanFactory, BeanFactory.FACTORY_BEAN_PREFIX + beanName) &&
 					factoryContainsBean(beanFactory, beanName)) {
+				//首先获取factorybean对象
 				Object factoryBean = beanFactory.getBean(BeanFactory.FACTORY_BEAN_PREFIX + beanName);
 				if (factoryBean instanceof ScopedProxyFactoryBean) {
 					// Scoped proxy factory beans are a special case and should not be further proxied
@@ -492,14 +497,17 @@ class ConfigurationClassEnhancer {
 				Class<?> clazz = factoryBean.getClass();
 				boolean finalClass = Modifier.isFinal(clazz.getModifiers());
 				boolean finalMethod = Modifier.isFinal(clazz.getMethod("getObject").getModifiers());
+				//判断是否为静态类或者为静态方法
 				if (finalClass || finalMethod) {
 					if (exposedType.isInterface()) {
+						//factoryBean中getObject返回的是接口
 						if (logger.isTraceEnabled()) {
 							logger.trace("Creating interface proxy for FactoryBean '" + beanName + "' of type [" +
 									clazz.getName() + "] for use within another @Bean method because its " +
 									(finalClass ? "implementation class" : "getObject() method") +
 									" is final: Otherwise a getObject() call would not be routed to the factory.");
 						}
+						//使用jdk动态代理
 						return createInterfaceProxyForFactoryBean(factoryBean, exposedType, beanFactory, beanName);
 					}
 					else {
@@ -510,6 +518,7 @@ class ConfigurationClassEnhancer {
 									" is final: A getObject() call will NOT be routed to the factory. " +
 									"Consider declaring the return type as a FactoryBean interface.");
 						}
+						//静态方法非接口返回则不进行代理
 						return factoryBean;
 					}
 				}
@@ -567,6 +576,7 @@ class ConfigurationClassEnhancer {
 				}
 			}
 
+			//factorybean 的getBean方法做代理
 			((Factory) fbProxy).setCallback(0, (MethodInterceptor) (obj, method, args, proxy) -> {
 				if (method.getName().equals("getObject") && args.length == 0) {
 					return beanFactory.getBean(beanName);

@@ -279,6 +279,7 @@ class ConfigurationClassParser {
 			}
 		}
 
+		//处理ComponentScan 要扫描的包
 		// Process any @ComponentScan annotations
 		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
@@ -295,6 +296,7 @@ class ConfigurationClassParser {
 						bdCand = holder.getBeanDefinition();
 					}
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
+						//再次调用parse方法
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
 					}
 				}
@@ -302,6 +304,7 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @Import annotations
+		//@Import三种情况：1.ImportSelector 2.普通类 3.ImportBeanDefinitionRegistrar
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
 		// Process any @ImportResource annotations
@@ -317,6 +320,7 @@ class ConfigurationClassParser {
 		}
 
 		// Process individual @Bean methods
+		//将类中@Bean注解的bd放入 bdm中
 		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
 		for (MethodMetadata methodMetadata : beanMethods) {
 			configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
@@ -562,12 +566,15 @@ class ConfigurationClassParser {
 						ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								selector, this.environment, this.resourceLoader, this.registry);
+						//是否延迟加载
 						if (selector instanceof DeferredImportSelector) {
 							this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector);
 						}
 						else {
+							//处理@Import 实现接口ImportSelector
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
+							//递归处理@import
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
 					}
@@ -577,6 +584,7 @@ class ConfigurationClassParser {
 						Class<?> candidateClass = candidate.loadClass();
 						ImportBeanDefinitionRegistrar registrar =
 								BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
+						//执行ImportBeanDefinitionRegistrar中的实现方法，把自定义的加载到bdm中
 						ParserStrategyUtils.invokeAwareMethods(
 								registrar, this.environment, this.resourceLoader, this.registry);
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
@@ -584,6 +592,7 @@ class ConfigurationClassParser {
 					else {
 						// Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
 						// process it as an @Configuration class
+						//处理@Import 普通类情况
 						this.importStack.registerImport(
 								currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
 						processConfigurationClass(candidate.asConfigClass(configClass));

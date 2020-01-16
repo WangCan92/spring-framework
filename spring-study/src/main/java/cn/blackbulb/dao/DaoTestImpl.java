@@ -11,9 +11,9 @@ import org.springframework.stereotype.Repository;
 /**
  * @author wangcan
  */
-@Repository
-@Primary
-@Scope("prototype")
+//@Repository
+//@Primary
+//@Scope("prototype")
 //@Profile("dev")
 public class DaoTestImpl implements DaoTest, InitializingBean, DisposableBean {
 

@@ -239,6 +239,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 		this.registriesPostProcessed.add(registryId);
 
+		//扫描@Component 和@Import的类
 		processConfigBeanDefinitions(registry);
 	}
 
@@ -260,6 +261,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
 
+		//对@Configuration注解的类进行cglib代理
 		enhanceConfigurationClasses(beanFactory);
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
@@ -274,11 +276,12 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		for (String beanName : candidateNames) {
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
+			//判断是否处理过如果处理过跳过
 			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
-			}
+			}//判断是否是配置类checkConfigurationClassCandidate方法会设置config是full还是lite
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
@@ -322,14 +325,17 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
+			//把普通类(@Companent注解的类)加入bdm中，由import引入的放到一个map后续处理
 			parser.parse(candidates);
 			parser.validate();
 
+			//取出@Improt 引入的普通类
 			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
 			configClasses.removeAll(alreadyParsed);
 
 			// Read the model and create bean definitions based on its content
 			if (this.reader == null) {
+				//new 了一个reader
 				this.reader = new ConfigurationClassBeanDefinitionReader(
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
@@ -419,6 +425,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			return;
 		}
 
+		//对@Configuration注解的类代理增强
 		ConfigurationClassEnhancer enhancer = new ConfigurationClassEnhancer();
 		for (Map.Entry<String, AbstractBeanDefinition> entry : configBeanDefs.entrySet()) {
 			AbstractBeanDefinition beanDef = entry.getValue();

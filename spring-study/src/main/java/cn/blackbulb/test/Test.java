@@ -1,12 +1,9 @@
 package cn.blackbulb.test;
 
 import cn.blackbulb.conf.AppConfig;
-import cn.blackbulb.dao.DaoTestImpl;
-import cn.blackbulb.pojo.request.ParamTest;
-import cn.blackbulb.service.Dao;
-import cn.blackbulb.dao.DaoTest;
-import cn.blackbulb.service.ServiceTest;
+import cn.blackbulb.dao.ImportDaoImpl;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @author wangcan
@@ -14,11 +11,13 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class Test {
 	public static void main(String[] args) {
 		//准备spring的前提环境
-		AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext();
+//		AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
+		ClassPathXmlApplicationContext cc = new ClassPathXmlApplicationContext("classpath:factorybean.xml");
+//		System.out.println(cc.getBean(TestDaoFactoryBean.class));
 
-		ac.getEnvironment().setActiveProfiles("dev");
-		ac.register(AppConfig.class);
-		ac.refresh();
+		//		ac.getEnvironment().setActiveProfiles("dev");
+//		ac.register(AppConfig.class);
+//		ac.refresh();
 //		ac.register(Example2.class);
 //		ServiceTest serviceTest = ac.getBean(ServiceTest.class);
 //		serviceTest.printOut();
@@ -28,11 +27,11 @@ public class Test {
 //		example2.printOut();
 //		ac.getBean(DaoTest.class);
 //		ac.close();
-		ServiceTest serviceTest = ac.getBean(ServiceTest.class);
-		ParamTest paramTest = new ParamTest();
-		paramTest.setSourceCode("123");
-		paramTest.setUserId("0987");
-		serviceTest.printParam(paramTest,12222);
+//		ServiceTest serviceTest = ac.getBean(ServiceTest.class);
+//		ParamTest paramTest = new ParamTest();
+//		paramTest.setSourceCode("123");
+//		paramTest.setUserId("0987");
+//		serviceTest.printParam(paramTest,12222);
 //		serviceTest.printOut();
 //		serviceTest.printOutStr("99999999999");
 //		serviceTest.printOutAnno("8888888888888");
@@ -46,6 +45,7 @@ public class Test {
 //		DaoTest daoimpl = ac.getBean(DaoTest.class);
 //		daoimpl.daoPrint();
 
+//		ac.getBean(ImportDaoImpl.class).printOut();
 
 	}
 }

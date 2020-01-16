@@ -86,6 +86,7 @@ final class LogAdapter {
 	public static Log createLog(String name) {
 		switch (logApi) {
 			case LOG4J:
+				//log4j 2
 				return Log4jAdapter.createLog(name);
 			case SLF4J_LAL:
 				return Slf4jAdapter.createLocationAwareLog(name);

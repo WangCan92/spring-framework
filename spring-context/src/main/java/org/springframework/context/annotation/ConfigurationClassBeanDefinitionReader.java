@@ -137,13 +137,16 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+		//处理@Import逻辑
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
+		//处理@Bean注解的方法的bd放入到bdm中
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
+		//处理@importResource
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}

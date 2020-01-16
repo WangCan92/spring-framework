@@ -60,7 +60,10 @@ final class PostProcessorRegistrationDelegate {
 
 		if (beanFactory instanceof BeanDefinitionRegistry) {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
+			//放程序员手动添加的BeanFactoryPostProcessor
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
+			//BeanDefinitionRegistryPostProcessor是BeanFactoryPostProcessor子类
+			//放程序手动添加的BeanDefinitionRegistryPostProcessor
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
@@ -79,6 +82,7 @@ final class PostProcessorRegistrationDelegate {
 			// uninitialized to let the bean factory post-processors apply to them!
 			// Separate between BeanDefinitionRegistryPostProcessors that implement
 			// PriorityOrdered, Ordered, and the rest.
+			//放spring自己的BeanDefinitionRegistryPostProcessor
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
@@ -112,6 +116,7 @@ final class PostProcessorRegistrationDelegate {
 			boolean reiterate = true;
 			while (reiterate) {
 				reiterate = false;
+				//获取到在new AnnotatedBeanDefinitionReader（）的时候放到bd中的ConfigurationClassPostProcessor
 				postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 				for (String ppName : postProcessorNames) {
 					if (!processedBeans.contains(ppName)) {
@@ -122,11 +127,15 @@ final class PostProcessorRegistrationDelegate {
 				}
 				sortPostProcessors(currentRegistryProcessors, beanFactory);
 				registryProcessors.addAll(currentRegistryProcessors);
+				//调用ConfigurationClassPostProcessor的postProcessBeanDefinitionRegistry方法
+				//实现@Companent和@Import的类的bd放入bdm
 				invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 				currentRegistryProcessors.clear();
 			}
 
 			// Now, invoke the postProcessBeanFactory callback of all processors handled so far.
+			//调用ConfigurationClassPostProcessor的postProcessBeanFactory方法，对@Configuration注解的类进行代理处理
+			//放入一个ImportAwareBeanPostProcessor后置处理器
 			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
 			invokeBeanFactoryPostProcessors(regularPostProcessors, beanFactory);
 		}

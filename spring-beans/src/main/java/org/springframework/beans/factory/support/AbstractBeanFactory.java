@@ -243,7 +243,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
-		//解决懒加载和循环引用的问题
+		//解决懒加载和循环引用的问题 初次实例化肯定为null,当为懒加载时，有可能非空
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			if (logger.isTraceEnabled()) {
@@ -261,6 +261,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
+			//原型报错
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
@@ -288,6 +289,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			if (!typeCheckOnly) {
+				//在alreadyCreated 的set中添加正在创建的bean的name
 				markBeanAsCreated(beanName);
 			}
 
@@ -318,6 +320,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				if (mbd.isSingleton()) {
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
+							//创建bean此过程中实现了aop的代理
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {

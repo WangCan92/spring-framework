@@ -34,4 +34,8 @@ public class TestDaoFactoryBean implements FactoryBean {
 	public void setMsg(String msg) {
 		this.msg = msg;
 	}
+
+	public void printMsg(){
+		System.out.println(this.msg);
+	}
 }

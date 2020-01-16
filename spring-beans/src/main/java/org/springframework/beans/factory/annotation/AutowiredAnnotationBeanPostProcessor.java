@@ -240,6 +240,13 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 		this.injectionMetadataCache.remove(beanName);
 	}
 
+	/**
+	 * 实例化类时决定用那个构造方法
+	 * @param beanClass
+	 * @param beanName
+	 * @return
+	 * @throws BeanCreationException
+	 */
 	@Override
 	@Nullable
 	public Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, final String beanName)
@@ -301,6 +308,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 					int nonSyntheticConstructors = 0;
 					for (Constructor<?> candidate : rawCandidates) {
 						if (!candidate.isSynthetic()) {
+							//非合成构造方法，即我们自己定义的构造方法
 							nonSyntheticConstructors++;
 						}
 						else if (primaryConstructor != null) {

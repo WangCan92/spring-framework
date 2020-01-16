@@ -262,6 +262,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	}
 
 	/**
+	 *
+	 * 普通类加入bdm中
 	 * Perform a scan within the specified base packages,
 	 * returning the registered bean definitions.
 	 * <p>This method does <i>not</i> register an annotation config processor
@@ -278,7 +280,9 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
+
 				if (candidate instanceof AbstractBeanDefinition) {
+					//设置默认属性
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
 				if (candidate instanceof AnnotatedBeanDefinition) {

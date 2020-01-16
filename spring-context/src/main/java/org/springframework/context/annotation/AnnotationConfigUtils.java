@@ -145,22 +145,27 @@ public abstract class AnnotationConfigUtils {
 	 * @return a Set of BeanDefinitionHolders, containing all bean definitions
 	 * that have actually been registered by this call
 	 */
-	public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
+		public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
 
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
 		if (beanFactory != null) {
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
+				//添加加载顺序
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
 			}
 			if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
+				//提供延迟加载
 				beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
 			}
 		}
 
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 
+		//添加6个后置处理器
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
+			//非常重要一个后置处理器，用于处理beanfactoryprocessor
+			//注册的类为：org.springframework.context.annotation.ConfigurationClassPostProcessor
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));

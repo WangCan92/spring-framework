@@ -20,6 +20,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.lang.Nullable;
 
 /**
+ * spring容器提供的一个扩展类点
  * Factory hook that allows for custom modification of new bean instances,
  * e.g. checking for marker interfaces or wrapping them with proxies.
  *
